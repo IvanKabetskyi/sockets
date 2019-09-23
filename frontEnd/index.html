@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Hello</h1>
+
+
+    <h3>Demo</h3>
+    <h2 id="socketContainerDemo"></h2>
+    <input type="text" id="socketDemo">
+    <h3>State</h3>
+    <h2 id="socketContainerState"></h2>
+    <input type="text" id="socketState">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script>
+        const socketInputDemo = document.getElementById('socketDemo');
+        const socketInputState = document.getElementById('socketState');
+        const socketContainerDemo = document.getElementById('socketContainerDemo');
+        const socketContainerState = document.getElementById('socketContainerState');
+        const socketDemo = io('http://localhost:3000/de');
+        const socketState = io('http://localhost:3000/st');
+        socketDemo.on('test1', function (data) {
+            socketContainerDemo.innerHTML = data.text;
+        });
+        socketState.on('test1', function (data) {
+            console.log(data);
+            socketContainerState.innerHTML = data.text;
+        });
+        socketInputDemo.addEventListener('input', ({ target }) => {
+            socketDemo.emit('test1', {
+                text: target.value
+            });
+        });
+        socketInputState.addEventListener('input', ({ target }) => {
+            socketState.emit('test1', {
+                text: target.value
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -25,22 +25,45 @@
         const socketInputState = document.getElementById('socketState');
         const socketContainerDemo = document.getElementById('socketContainerDemo');
         const socketContainerState = document.getElementById('socketContainerState');
-        const socketDemo = io('http://localhost:3000/de');
-        const socketState = io('http://localhost:3000/st');
-        socketDemo.on('test1', function (data) {
-            socketContainerDemo.innerHTML = data.text;
+        const socket = io('http://localhost:3000', {
+            query: {
+                token: 'tempWsToken',
+                room: `driver59`,
+            },
+            transports: ['websocket'],
         });
-        socketState.on('test1', function (data) {
-            console.log(data);
-            socketContainerState.innerHTML = data.text;
+
+        socket.on('test', data => {
+            socketContainerDemo.innerHTML = data;
+        })
+
+        const socketOwner = io('http://localhost:3000', {
+            query: {
+                token: 'tempWsToken',
+                room: `owner`,
+            },
+            transports: ['websocket'],
         });
+
+        socketOwner.on('test', data => {
+            socketContainerState.innerHTML = data;
+        })
+        // const socketDemo = io('http://localhost:3000/de');
+        // const socketState = io('http://localhost:3000/st');
+        // socketDemo.on('test1', function (data) {
+        //     socketContainerDemo.innerHTML = data.text;
+        // });
+        // socketState.on('test1', function (data) {
+        //     console.log(data);
+        //     socketContainerState.innerHTML = data.text;
+        // });
         socketInputDemo.addEventListener('input', ({ target }) => {
-            socketDemo.emit('test1', {
+            socket.emit('test', {
                 text: target.value
             });
         });
         socketInputState.addEventListener('input', ({ target }) => {
-            socketState.emit('test1', {
+            socketOwner.emit('test', {
                 text: target.value
             });
         });

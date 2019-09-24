@@ -15,41 +15,58 @@ app.use(express.static('socket'));
 
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/frontEnd/index.html');
+  res.sendFile(__dirname + '/frontEnd/index.html');
 });
 
 
 const server = app.listen(3000, () => {
-    console.log('Server on 3000 port');
+  console.log('Server on 3000 port');
 })
 
 const io = require('socket.io').listen(server);
 
-const demo = io.of('/de').on('connection', socket => {
-    demo.emit('test', {
-        data: 'Hello'
+io.sockets.on('connection', socket => {
+  let rooms = ['owner'];
+  if(socket.handshake.query.room !== 'owner'){
+    rooms.push(socket.handshake.query.room);
+  }
+  socket.join(socket.handshake.query.room);
+  rooms.forEach(event => {
+    io.sockets.in(event).emit('test', event);
+  });
+  socket.on('test', function (data) {
+    console.log(rooms, data.text);
+    rooms.forEach(event => {
+      io.sockets.in(event).emit('test', data.text);
     });
-    socket.on('test1', function (data) {
-        console.log(data);
-        demo.emit('test1', data);
-        demo.emit('test', data);
-    });
+  });
+})
 
-    socket.on('disconect', () => {
-        socket.disconnect();
-    })
-});
+// const demo = io.of('/de').on('connection', socket => {
+//     demo.emit('test', {
+//         data: 'Hello'
+//     });
+//     socket.on('test1', function (data) {
+//         console.log(data);
+//         demo.emit('test1', data);
+//         demo.emit('test', data);
+//     });
 
-const state = io.of('/st').on('connection', socket => {
-    state.emit('test', {
-        data: 'Hello'
-    });
-    socket.on('test1', function (data) {
-        console.log(data);
-        state.emit('test1', data);
-        state.emit('test', data);
-    });
-    socket.on('disconect', () => {
-        socket.disconnect();
-    })
-});
+//     socket.on('disconect', () => {
+//         socket.disconnect();
+//     })
+// });
+
+// const state = io.of('/st').on('connection', socket => {
+//     state.emit('test', {
+//         data: 'Hello'
+//     });
+//     socket.on('test1', function (data) {
+//         console.log(data);
+//         state.emit('test1', data);
+//         state.emit('test', data);
+//     });
+//     socket.on('disconect', () => {
+//         socket.disconnect();
+//     })
+// });

@@ -19,6 +19,10 @@
     <h2 id="socketContainerState"></h2>
     <input type="text" id="socketState">
 
+    <input type="file" id="fileSend">
+
+    <button id="sendFile">send file</button>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
     <script>
         const socketInputDemo = document.getElementById('socketDemo');
@@ -67,6 +71,41 @@
                 text: target.value
             });
         });
+
+        const fileContainer = document.getElementById('fileSend');
+
+        let readerFile = null;
+
+        fileContainer.addEventListener('change', ({ target }) => {
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                readerFile = reader.result;
+            };
+            reader.readAsDataURL(target.files[0]);
+        })
+
+        document.getElementById('sendFile').addEventListener('click', () => {
+
+
+            console.log(fileContainer.value);
+            let file = fileContainer.files[0];
+
+            const blob = new Blob([file], { type: file.type });
+            console.log(blob);
+
+            let formData = new FormData();
+            formData.append("image", blob, file.name);
+            console.log(fileContainer.files[0]);
+
+            console.log(readerFile);
+            socketOwner.emit('file', {
+                data: file,
+                name: file.name,
+                type: file.type
+
+            });
+        })
     </script>
 </body>
 

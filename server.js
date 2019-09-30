@@ -3,7 +3,47 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const ss = require('socket.io-stream');
+const path = require('path');
 
+
+const fs = require('fs');
+let files = '';
+
+const load_file = (files, i) =>{
+
+//   const reader = fs.createReadStream(files.fileUri);
+//   const strem = fs.createWriteStream('Old ' + files.fileName);
+//   reader.pipe(strem);
+
+
+  let base64Data =  files.replace(/^data:image\/png;base64,/, "");
+  files = '';
+
+  // base64Data = `data:${files.type};base64,${base64Data}`;
+
+
+	fs.writeFile(`files-name${i}.jpg`, base64Data, 'base64', function(err) {
+    if(err) {
+      console.log(err);
+    } else {
+      console.log("The file was saved!");
+    }
+  });
+
+  // var bitmap = fs.readFileSync(files.name);
+  // console.log(bitmap);
+//   const reader = fs.createReadStream(file.path);
+//   const strem = fs.createWriteStream(url);
+//   reader.pipe(strem);
+//   fs.writeFile('test.png', files.data,  "binary",function(err) {
+//     if(err) {
+//         console.log(err);
+//     } else {
+//         console.log("The file was saved!");
+//     }
+//   });
+}
 
 
 app.use(cors());
@@ -34,11 +74,32 @@ io.sockets.on('connection', socket => {
   rooms.forEach(event => {
     io.sockets.in(event).emit('test', event);
   });
-  socket.on('test', function (data) {
+  socket.on('test', function (data, ackFn) {
     console.log(rooms, data.text);
     rooms.forEach(event => {
       io.sockets.in(event).emit('test', data.text);
     });
+    ackFn('result')
+  });
+
+  let i = 0;
+
+  socket.on('file', async(stream) => {
+    if(stream.start){
+      // files[stream.id] = stream.data;
+      console.log('start', stream);
+    }else if(stream.upload){
+      // files[stream.id].data += stream.data;
+      files = files + stream.data;
+      i++;
+      console.log('chunk', i);
+    }else if(stream.end){
+      load_file(files, 'finish');
+
+      console.log('end');
+      console.log(i);
+      i = 0;
+    }
   });
 })
 
